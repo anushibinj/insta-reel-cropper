@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
@@ -16,11 +16,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/generate")
-async def generate_image(file: UploadFile = File(...)):
+async def generate_image(
+    file: UploadFile = File(...),
+    verticalPadding: int = Form(0),  # name matches frontend field
+):
     contents = await file.read()
     screenshot = Image.open(io.BytesIO(contents)).convert("RGB")
-    result_img = create_vertical_image(screenshot)
+    # If verticalPadding is intended as left/right margin (same value both sides):
+    result_img = create_vertical_image(
+        screenshot,
+        left_margin=verticalPadding,
+        right_margin=verticalPadding,
+    )
     buf = io.BytesIO()
     result_img.save(buf, format="PNG")
     buf.seek(0)

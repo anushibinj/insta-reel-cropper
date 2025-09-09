@@ -40,7 +40,10 @@ def clean_image_corners(img, corner_size=50, brightness_threshold=1):
 
 
 def create_vertical_image(
-    input_image: Image.Image, canvas_size=(1080, 1920)
+    input_image: Image.Image,
+    canvas_size=(1080, 1920),
+    left_margin=100,  # set your desired left margin here
+    right_margin=100,  # set your desired right margin here
 ) -> Image.Image:
 
     # Clean noise in image corners
@@ -52,11 +55,19 @@ def create_vertical_image(
     color_counts = Counter(pixels_tuples)
     dominant_color = color_counts.most_common(1)[0][0]
 
-    canvas = Image.new("RGB", canvas_size, dominant_color)
+    # Calculate the new canvas size with left/right padding
+    padded_canvas_size = (canvas_size[0] + left_margin + right_margin, canvas_size[1])
+    canvas = Image.new("RGB", padded_canvas_size, dominant_color)
+
+    # Resize input image if needed (keeping within the inner area)
+    inner_width = padded_canvas_size[0] - left_margin - right_margin
+    inner_height = padded_canvas_size[1]
     img = input_image.copy()
-    img.thumbnail(canvas_size, Image.Resampling.LANCZOS)
-    x = (canvas_size[0] - img.width) // 2
-    y = (canvas_size[1] - img.height) // 2
+    img.thumbnail((inner_width, inner_height), Image.Resampling.LANCZOS)
+
+    # Center horizontally within the padding
+    x = left_margin + (inner_width - img.width) // 2
+    y = (padded_canvas_size[1] - img.height) // 2
     canvas.paste(img, (x, y))
     return canvas
 

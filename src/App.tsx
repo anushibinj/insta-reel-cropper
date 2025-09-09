@@ -8,6 +8,7 @@ interface UploadState {
   processing: boolean;
   result: string | null;
   error: string | null;
+  padding: number;
 }
 
 function App() {
@@ -16,7 +17,8 @@ function App() {
     preview: null,
     processing: false,
     result: null,
-    error: null
+    error: null,
+    padding: 50
   });
 
   const handleFileSelect = useCallback((file: File) => {
@@ -36,7 +38,8 @@ function App() {
       preview,
       processing: false,
       result: null,
-      error: null
+      error: null,
+      padding: 50
     });
   }, []);
 
@@ -59,6 +62,7 @@ function App() {
     try {
       const formData = new FormData();
       formData.append('file', uploadState.file);
+      formData.append('verticalPadding', uploadState.padding.toString());
 
       const backendUrl = config.backendUrl.replace('$VITE_BACKEND_ROOT_URL', import.meta.env.VITE_BACKEND_ROOT_URL || 'http://localhost:8000');
       const response = await fetch(`${backendUrl}/generate`, {
@@ -106,10 +110,14 @@ function App() {
       preview: null,
       processing: false,
       result: null,
-      error: null
+      error: null,
+      padding: 50
     });
   };
 
+  const handlePaddingChange = (newPadding: number) => {
+    setUploadState(prev => ({ ...prev, padding: newPadding }));
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       {/* Hero Section */}
@@ -194,6 +202,25 @@ function App() {
                 </div>
 
                 <div className="text-center">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-gray-200 mb-4">Horizontal Padding</h3>
+                    <div className="px-4">
+                      <input
+                        type="range"
+                        min="0"
+                        max="200"
+                        value={uploadState.padding}
+                        onChange={(e) => handlePaddingChange(Number(e.target.value))}
+                        className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                      <div className="flex justify-between text-sm text-gray-400 mt-2">
+                        <span>0px</span>
+                        <span className="text-white font-medium">{uploadState.padding}px</span>
+                        <span>200px</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {uploadState.processing ? (
                     <div className="space-y-6">
                       <div className="w-16 h-16 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -233,6 +260,33 @@ function App() {
                 <p className="text-gray-300 text-lg">{config.result.subtitle}</p>
               </div>
 
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-200 mb-4 text-center">Adjust Horizontal Padding</h3>
+                <div className="max-w-md mx-auto px-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={uploadState.padding}
+                    onChange={(e) => handlePaddingChange(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                  <div className="flex justify-between text-sm text-gray-400 mt-2">
+                    <span>0px</span>
+                    <span className="text-white font-medium">{uploadState.padding}px</span>
+                    <span>200px</span>
+                  </div>
+                </div>
+                <div className="text-center mt-4">
+                  <button
+                    onClick={processImage}
+                    disabled={uploadState.processing}
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploadState.processing ? 'Processing...' : 'Regenerate'}
+                  </button>
+                </div>
+              </div>
               <div className="grid md:grid-cols-2 gap-8 items-start">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-200 mb-4">Original</h3>

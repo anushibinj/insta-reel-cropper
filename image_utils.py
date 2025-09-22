@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 from collections import Counter
 import io
@@ -51,24 +51,27 @@ def create_vertical_image(
 
     img_array = np.array(input_image)
     pixels = img_array.reshape(-1, 3)
-    pixels_tuples = [tuple(pixel) for pixel in pixels]
-    color_counts = Counter(pixels_tuples)
-    dominant_color = color_counts.most_common(1)[0][0]
+    dominant_color = tuple(Counter(map(tuple, pixels)).most_common(1)[0][0])
 
-    # Calculate the new canvas size with left/right padding
-    padded_canvas_size = (canvas_size[0] + left_margin + right_margin, canvas_size[1])
-    canvas = Image.new("RGB", padded_canvas_size, dominant_color)
+    # Create a fixed-size canvas (do NOT add margins to canvas size)
+    canvas_w, canvas_h = canvas_size
+    canvas = Image.new("RGB", (canvas_w, canvas_h), dominant_color)
 
-    # Resize input image if needed (keeping within the inner area)
-    inner_width = padded_canvas_size[0] - left_margin - right_margin
-    inner_height = padded_canvas_size[1]
-    img = input_image.copy()
-    img.thumbnail((inner_width, inner_height), Image.Resampling.LANCZOS)
+    # Compute inner area size (space available between margins)
+    inner_w = max(1, canvas_w - left_margin - right_margin)
+    inner_h = canvas_h
 
-    # Center horizontally within the padding
-    x = left_margin + (inner_width - img.width) // 2
-    y = (padded_canvas_size[1] - img.height) // 2
-    canvas.paste(img, (x, y))
+    # Resize the image to fit WITHIN the inner area, preserving aspect ratio
+    # Option A: ImageOps.contain (does not modify original)
+    resized = ImageOps.contain(
+        input_image, (inner_w, inner_h), method=Image.Resampling.LANCZOS
+    )
+
+    # Center horizontally within margins, and vertically on canvas
+    x = left_margin + (inner_w - resized.width) // 2
+    y = (canvas_h - resized.height) // 2
+
+    canvas.paste(resized, (x, y))
     return canvas
 
 

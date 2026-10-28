@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, Download, Sparkles, Instagram, Star } from 'lucide-react';
 import config from './data/config.json';
+import { createVerticalImage } from './lib/createVerticalImage';
 
 interface UploadState {
   file: File | null;
@@ -60,22 +61,10 @@ function App() {
     setUploadState(prev => ({ ...prev, processing: true, error: null }));
 
     try {
-      const formData = new FormData();
-      formData.append('file', uploadState.file);
-      formData.append('verticalPadding', uploadState.padding.toString());
-
-      const backendUrl = config.backendUrl.replace('$VITE_BACKEND_ROOT_URL', import.meta.env.VITE_BACKEND_ROOT_URL || 'http://localhost:8000');
-      const response = await fetch(`${backendUrl}/generate`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const blob = await response.blob();
+      const blob = await createVerticalImage(uploadState.file, uploadState.padding);
       const resultUrl = URL.createObjectURL(blob);
+
+      if (uploadState.result) URL.revokeObjectURL(uploadState.result);
 
       setUploadState(prev => ({
         ...prev,

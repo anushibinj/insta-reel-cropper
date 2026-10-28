@@ -1,7 +1,0 @@
-# don't know if this will cause issues. remove the version binding if build is not working
-streamlit==1.24.1
-pillow
-scikit-learn
-numpy
-mcp
-fastapi

@@ -13,7 +13,7 @@
     },
     {
       "title": "Instant Processing",
-      "description": "Get your cropped image in seconds with our lightning-fast backend"
+      "description": "Processed right in your browser — your image never leaves your device"
     },
     {
       "title": "High Quality",
@@ -38,6 +38,5 @@
     "title": "Your Reel-Ready Image",
     "subtitle": "Perfect for Instagram Reels!",
     "downloadText": "Download Cropped Image"
-  },
-  "backendUrl": "$VITE_BACKEND_ROOT_URL"
+  }
 }

@@ -37,8 +37,6 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Build 🔥
-              env:
-                  VITE_BACKEND_ROOT_URL: ${{ vars.VITE_BACKEND_ROOT_URL }}
               run: CI='' pnpm build
 
             - name: Setup Pages ⚙

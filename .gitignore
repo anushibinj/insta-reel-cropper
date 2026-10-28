@@ -28,3 +28,7 @@ dist-ssr
 *.pyo
 *.pyd
 __pycache__
+
+# Local env files
+.env
+.env.*

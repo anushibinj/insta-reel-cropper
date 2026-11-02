@@ -78,15 +78,24 @@ export function containSize(w: number, h: number, boxW: number, boxH: number): [
   return [boxW, boxH];
 }
 
-// Pure pixel pipeline: clean corners, resize (Pillow LANCZOS) and centre the image on
-// a CANVAS_W x CANVAS_H background of the dominant colour.
-export function renderVertical(input: RgbaImage, padding: number): RgbaImage {
+// Source image with corners cleaned and background colour found. This is the
+// expensive, padding-independent part, so it is computed once per upload.
+export interface PreparedImage {
+  src: RgbaImage;
+  bg: Rgb;
+}
+
+export function prepareImage(input: RgbaImage): PreparedImage {
   const src: RgbaImage = { ...input, data: new Uint8ClampedArray(input.data) };
   for (let i = 3; i < src.data.length; i += 4) src.data[i] = 255;
-
   cleanCorners(src);
-  const [br, bg, bb] = dominantColor(src);
+  return { src, bg: dominantColor(src) };
+}
 
+// Resizes (Pillow LANCZOS) and centres the image on a CANVAS_W x CANVAS_H
+// background of the dominant colour.
+export function renderPrepared({ src, bg }: PreparedImage, padding: number): RgbaImage {
+  const [br, bg_, bb] = bg;
   const innerW = Math.max(1, CANVAS_W - 2 * padding);
   const innerH = CANVAS_H;
   const [rw, rh] = containSize(src.width, src.height, innerW, innerH);
@@ -96,7 +105,7 @@ export function renderVertical(input: RgbaImage, padding: number): RgbaImage {
   const out = new Uint8ClampedArray(CANVAS_W * CANVAS_H * 4);
   for (let i = 0; i < out.length; i += 4) {
     out[i] = br;
-    out[i + 1] = bg;
+    out[i + 1] = bg_;
     out[i + 2] = bb;
     out[i + 3] = 255;
   }
@@ -121,9 +130,13 @@ export function renderVertical(input: RgbaImage, padding: number): RgbaImage {
   return { data: out, width: CANVAS_W, height: CANVAS_H };
 }
 
+export function renderVertical(input: RgbaImage, padding: number): RgbaImage {
+  return renderPrepared(prepareImage(input), padding);
+}
+
 // Decodes the file without EXIF rotation or colour management, like Pillow's
 // Image.open(...).convert("RGB").
-async function decode(file: Blob): Promise<RgbaImage> {
+export async function decode(file: Blob): Promise<RgbaImage> {
   const bitmap = await createImageBitmap(file, {
     imageOrientation: 'none',
     colorSpaceConversion: 'none',

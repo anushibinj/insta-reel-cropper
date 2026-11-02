@@ -119,7 +119,10 @@ function App() {
       )}
 
       {!file ? (
-        <main className="flex-1 flex items-center justify-center p-4 min-h-0">
+        <main className="flex-1 flex flex-col items-center justify-center gap-6 p-4 min-h-0">
+          <p className="text-center text-neutral-400 text-base max-w-xs">
+            Resize any image to post it in Instagram's 9:16 reel format.
+          </p>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}

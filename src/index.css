@@ -2,42 +2,56 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+html, body, #root {
+  height: 100%;
+  background: #0a0a0a;
+  overscroll-behavior: none;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.border-3 {
-  border-width: 3px;
-}
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-/* Custom slider styles */
-.slider::-webkit-slider-thumb {
+/* Slider: big touch-friendly thumb */
+.slider {
+  -webkit-appearance: none;
   appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #ffffff;
+  height: 28px;
+  background: transparent;
+  touch-action: none;
   cursor: pointer;
-  border: 2px solid #4b5563;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-
-.slider::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #404040;
+}
+.slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #404040;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 26px;
+  width: 26px;
+  margin-top: -11px;
   border-radius: 50%;
-  background: #ffffff;
-  cursor: pointer;
-  border: 2px solid #4b5563;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.slider::-moz-range-thumb {
+  height: 26px;
+  width: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }

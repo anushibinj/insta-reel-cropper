@@ -3,6 +3,7 @@ import { prepareImage, renderPrepared, decode, type PreparedImage } from './crea
 // Messages: { type: 'load', file } then { type: 'render', id, padding }.
 // Rendering is latest-wins: while a render is running only the newest
 // requested padding is kept, so dragging the slider never builds a backlog.
+const ctx = self as unknown as { postMessage(msg: unknown, transfer?: Transferable[]): void };
 let prepared: PreparedImage | null = null;
 let pending: { id: number; padding: number } | null = null;
 let busy = false;
@@ -15,7 +16,7 @@ async function pump() {
     pending = null;
     const { data, width, height } = renderPrepared(prepared, padding);
     const buffer = data.buffer as ArrayBuffer;
-    self.postMessage({ type: 'result', id, buffer, width, height }, [buffer]);
+    ctx.postMessage({ type: 'result', id, buffer, width, height }, [buffer]);
     // Yield so newly arrived messages can replace `pending`.
     await new Promise((r) => setTimeout(r, 0));
   }
@@ -29,12 +30,12 @@ self.onmessage = async (e: MessageEvent) => {
       prepared = null;
       pending = null;
       prepared = prepareImage(await decode(msg.file));
-      self.postMessage({ type: 'loaded' });
+      ctx.postMessage({ type: 'loaded' });
     } else if (msg.type === 'render') {
       pending = { id: msg.id, padding: msg.padding };
       void pump();
     }
   } catch (err) {
-    self.postMessage({ type: 'error', message: err instanceof Error ? err.message : 'Failed to process image' });
+    ctx.postMessage({ type: 'error', message: err instanceof Error ? err.message : 'Failed to process image' });
   }
 };
